@@ -2,8 +2,11 @@
 Utility functions for the Telegram Message Forwarder.
 """
 
+import copy
 import re
 from typing import Optional, Any, Dict, List, Union
+
+from telethon.helpers import add_surrogate
 
 # Regex pattern for Telegram message links
 # Matches formats like:
@@ -74,3 +77,26 @@ def get_media_type_name(media: Any) -> Optional[str]:
     if media is None:
         return None
     return type(media).__name__.replace('MessageMedia', '')
+
+
+def shift_entities(entities: Optional[List[Any]], prefix: str) -> Optional[List[Any]]:
+    """
+    Shift formatting entities to account for text prepended to the message.
+
+    Args:
+        entities: Original message entities
+        prefix: Text prepended before the original message text
+
+    Returns:
+        Copies of the entities with offsets moved past the prefix
+    """
+    if not entities:
+        return entities
+
+    prefix_length = len(add_surrogate(prefix))
+    shifted = []
+    for entity in entities:
+        moved = copy.copy(entity)
+        moved.offset += prefix_length
+        shifted.append(moved)
+    return shifted

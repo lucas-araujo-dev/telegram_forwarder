@@ -9,6 +9,7 @@ from telethon.errors import ForbiddenError, ChatAdminRequiredError, ChannelPriva
 from src.logger import setup_logger
 from src.forwarder.entities import EntityManager
 from src.forwarder.processors import MessageProcessor
+from src.forwarder.utils import shift_entities
 
 # Setup logger
 logger = setup_logger(__name__)
@@ -110,12 +111,16 @@ class ForwardingManager:
                 if message.noforwards or not can_forward_directly:
                     sendable_media = None
 
+                entities = message.entities
+                if include_source:
+                    entities = shift_entities(message.entities, f"{source_info}\n\n")
+
                 # Send the main message first
                 await self.client.send_message(
                     to_chat,
                     text,
                     reply_to=to_topic,
-                    formatting_entities=message.entities,
+                    formatting_entities=entities,
                     file=sendable_media
                 )
 
