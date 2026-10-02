@@ -107,6 +107,9 @@ class ForwardingManager:
                     message_contents
                 )
 
+                if message.noforwards or not can_forward_directly:
+                    sendable_media = None
+
                 # Send the main message first
                 await self.client.send_message(
                     to_chat,
